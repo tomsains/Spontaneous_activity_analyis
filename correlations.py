@@ -9,7 +9,7 @@ from Utility_functions import load_data_by_deconvolution_method
 
 
 class correlations:
-    def __init__(self, folder, data_set_name, deconvolution_method="AR1", iter = 200, remove_intro =True, midline_no = 0):
+    def __init__(self, folder, data_set_name, deconvolution_method="AR1", iter = 200, remove_intro =True, midline_no = 0, subsample = False):
         self.spikes, self.calcium = load_data_by_deconvolution_method(full_folder_path=folder,data_set_name=data_set_name, method=deconvolution_method)
 
         if remove_intro == True:
@@ -23,13 +23,25 @@ class correlations:
         print(self.midline)
         print("spikes shape:" + str(self.spikes.shape))
         #self.plot_centers_with_midline()
-        self.null(iter=iter)
+        if subsample == False:
+            self.null(iter=iter)
+
+        if subsample == True:
+            self.subsample()
+            self.subsample_null(iter = 2000)
 
     def filter_inactive_cells(self):
         filter_vec = (np.sum(self.spikes, axis=1) > 1)
         self.spikes = self.spikes[filter_vec, :]
         self.calcium = self.calcium[filter_vec, :]
         self.centers = self.centers[filter_vec, :]
+
+    def subsample(self):
+        self.sample_vec = np.random.choice(self.spikes.shape[0], 100)
+        self.spikes = self.spikes[self.sample_vec, :]
+        self.calcium = self.calcium[self.sample_vec, :]
+        self.centers = self.centers[self.sample_vec, :]
+
 
     def circular_permutation(self):
         shuff = self.spikes
@@ -74,6 +86,33 @@ class correlations:
         print("calculating_quantile")
         self.nullcorrs = np.apply_along_axis(func1d=np.quantile, arr=self.nullcorrs, axis=2, q=.99)
 
+
+    def subsample_null(self, iter=200):
+        self.nullcorrs = np.zeros(shape=(self.spikes.shape[0], self.spikes.shape[0], iter))
+        self.realcorrs = np.corrcoef(self.spikes)
+        #self.which_side_is_cell()
+       # print("real_corrs_shape" + str(self.realcorrs.shape))
+        #print(self.cell_distances.shape)
+
+        for i in range(iter):
+            print(i)
+            shuff = self.circular_permutation()
+            self.nullcorrs[:, :, i] = np.corrcoef(shuff)
+            if i % 10 == 0:
+                print(psutil.virtual_memory())
+
+        self.quants = np.zeros((self.nullcorrs.shape[0], self.nullcorrs.shape[1], np.floor(iter/10).astype(np.int)))
+        breaks = np.linspace(1,iter,np.floor(iter/10)).astype(np.int)
+        for i, b in enumerate(breaks):
+            print(i)
+            print(b)
+            self.quants [:,:,i] = np.quantile(self.nullcorrs [:,:,0:b], axis = 2, q = .95)
+
+
+
+
+
+
     def remove_intro(self, intro=np.int(4.85 * (60 * 5))):
         self.spikes = self.spikes[:, intro:]
 
@@ -107,22 +146,36 @@ def apply_correlations(main_folder, folder="WT_GR_3_dpf",deconvolution_method = 
             print(d)
             corrs = correlations(folder=main_folder + f, data_set_name= d [:-suffix_len], deconvolution_method = deconvolution_method, iter=iter, remove_intro=remove_intro, midline_no=i)
             print("save_real_corrs")
-            np.savetxt(fname=main_folder + folder + "/correlations/" + d[:-suffix_len] + deconvolution_method + "_cal_real_correlations_removed_intro-" + str(remove_intro) + ".npy", X=corrs.calcorrs)
-            np.savetxt(fname=main_folder + folder + "/correlations/" + d[:-suffix_len] + deconvolution_method + "_spikes_real_correlations_removed_intro-" + str(remove_intro) + ".npy", X=corrs.realcorrs)
+            np.savetxt(fname=main_folder + folder + "/correlations/" + d[:-suffix_len] + deconvolution_method + "_cal_real_correlations_removed_intro-" + str(remove_intro) + ".dat", X=corrs.calcorrs)
+            np.savetxt(fname=main_folder + folder + "/correlations/" + d[:-suffix_len] + deconvolution_method + "_spikes_real_correlations_removed_intro-" + str(remove_intro) + ".dat", X=corrs.realcorrs)
 
             print("save_null_corrs")
-            np.savetxt(fname=main_folder + folder + "/correlations/" + d[:-suffix_len] + deconvolution_method + "_spikes_null_correlations_sig_0.99_iter_" + str(iter) + "_removed_intro-" + str(remove_intro) + ".npy", X=corrs.nullcorrs)
+            np.savetxt(fname=main_folder + folder + "/correlations/" + d[:-suffix_len] + deconvolution_method + "_spikes_null_correlations_sig_0.99_iter_" + str(iter) + "_removed_intro-" + str(remove_intro) + ".dat", X=corrs.nullcorrs)
 
             print("save_distances")
-            np.savetxt(fname=main_folder + folder + "/correlations/" + d[:-suffix_len] + deconvolution_method + "_cell_distances" + "_removed_intro-" + str(remove_intro) + ".npy", X=corrs.cell_distances)
+            np.savetxt(fname=main_folder + folder + "/correlations/" + d[:-suffix_len] + deconvolution_method + "_cell_distances" + "_removed_intro-" + str(remove_intro) + ".dat", X=corrs.cell_distances)
 
-            print()
-            np.savetxt(fname=main_folder + folder + "/correlations/" + d[:-suffix_len] + deconvolution_method + "_cell_side" + "_removed_intro-" + str(remove_intro) + ".npy", X=corrs.side.astype(np.int))
+
+            np.savetxt(fname=main_folder + folder + "/correlations/" + d[:-suffix_len] + deconvolution_method + "_cell_side" + "_removed_intro-" + str(remove_intro) + ".dat", X=corrs.side.astype(np.int))
             del corrs
 
 
-def apply_correlations_all_folder(main_folder, deconvolution_method, iter, remove_intro):
+def apply_correlations_all_folder(main_folder, deconvolution_method, iter, remove_intro, start_from = 0):
     folders = [os.path.basename(x) for x in glob.glob(main_folder + "*WT_*")]
+    folders = folders [start_from:len(folders)]
     for f in folders:
         print(f)
         apply_correlations(main_folder=main_folder, folder=f +"/", deconvolution_method = deconvolution_method, iter = iter, remove_intro=remove_intro)
+
+
+
+def subsample_iter_corrs(folder, data_set_name, deconvolution_method="BCL"):
+
+    corrs = correlations(folder= folder, data_set_name=data_set_name,
+                             deconvolution_method=deconvolution_method, remove_intro=False,
+                             midline_no=0, subsample=True)
+    np.save(file= folder + "/correlations/" + data_set_name + deconvolution_method + "subsample_quants.dat", arr=corrs.quants)
+    np.save(file=folder + "/correlations/" + data_set_name + deconvolution_method + "subsample_quants_nulls.dat",
+            arr=corrs.nullcorrs)
+    np.save(file=folder + "/correlations/" + data_set_name + deconvolution_method + "subsample_quants_real.dat",
+            arr=corrs.realcorrs)
