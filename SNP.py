@@ -6,17 +6,13 @@ import os
 from scipy import ndimage
 from pyrle import Rle
 import seaborn as sns
+from Utility_functions import load_data_by_deconvolution_method, list_data_sets_in_folder
 
 
 class data_set_SNP:
     def __init__(self, main_folder, condition_folder, data_set_prefix, deconvolution_method="BCL",
                  remove_intro=" True"):
-        if deconvolution_method == "BCL":
-            print("loading_cal")
-            self.Calcium = np.loadtxt(main_folder + condition_folder + data_set_prefix + "_all_cells_cal.dat",
-                                      dtype="double")
-            print("loading_spikes")
-            self.Spikes = np.loadtxt(main_folder + condition_folder + data_set_prefix + "_all_cells_spikes.dat")
+        self.Spikes, self.Calcium = load_data_by_deconvolution_method(full_folder_path=main_folder+condition_folder,data_set_name=data_set_prefix, method=deconvolution_method)
 
         self.Centers = np.loadtxt(main_folder + condition_folder + data_set_prefix + "_all_cells_centers_cut_ordered.dat")
         self.print_sync_frames_and_cell_number()

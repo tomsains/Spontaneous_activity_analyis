@@ -3,21 +3,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import glob
+from Utility_functions import load_data_by_deconvolution_method, list_data_sets_in_folder
 
 
 class sync_frames_cell_num:
     def __init__(self, main_folder, folder, data_set_name,  deconvolution_method, remove_intro, index):
         path = main_folder + folder
-        if deconvolution_method == "BCL":
-            print(folder + data_set_name + "_all_cells_spikes.dat")
-            self.spikes = np.loadtxt(path + data_set_name + "_all_cells_spikes.dat")
-            print("loaded")
-
-        if deconvolution_method == "AR1":
-            self.spikes = np.loadtxt(path + data_set_name + "_oasisAR1_s.txt")
-
-        if deconvolution_method == "estimated":
-            self.spikes = np.loadtxt(path + data_set_name + "_oasis_s.txt")
+        self.spikes, self.calcium = load_data_by_deconvolution_method(full_folder_path=path,data_set_name=data_set_name, method=deconvolution_method)
 
         if remove_intro == True:
             self.remove_intro()
@@ -69,21 +61,16 @@ def apply_sync_frames(main_folder, results_folder, deconvolution_method, remove_
     all_conditions = [0]*len(folders)
     for i, f in enumerate(folders):
         print(f)
-        if deconvolution_method == "AR1":
-            data_sets = [os.path.basename(x) for x in glob.glob(main_folder + f + "/*_oasis_c*")]
-            suffix_len = 12
+        data_sets = list_data_sets_in_folder(main_folder=main_folder, condition_folder=f)
 
-        if deconvolution_method == "BCL":
-            data_sets = [os.path.basename(x) for x in glob.glob(main_folder + f + "/*_spikes*")]
-            suffix_len = 22 - 1
 
 
         all_fish =  [0]*len(data_sets)
         for j, d in enumerate(data_sets):
 
-            print("processing ...." + d[:-suffix_len])
+            print("processing ...." + d)
             print(d)
-            sf_object = sync_frames_cell_num(main_folder=main_folder, folder=f + "/", data_set_name=d[:-suffix_len],
+            sf_object = sync_frames_cell_num(main_folder=main_folder, folder=f + "/", data_set_name=d,
                                 deconvolution_method=deconvolution_method, remove_intro=remove_intro, index=j)
 
             all_fish [j] = sf_object.df

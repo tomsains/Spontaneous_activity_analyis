@@ -5,7 +5,7 @@ import os
 import glob
 from sklearn.metrics.pairwise import euclidean_distances
 import matplotlib.pyplot as plt
-from Utility_functions import load_data_by_deconvolution_method
+from Utility_functions import load_data_by_deconvolution_method, list_data_sets_in_folder
 
 
 class correlations:
@@ -90,9 +90,6 @@ class correlations:
     def subsample_null(self, iter=200):
         self.nullcorrs = np.zeros(shape=(self.spikes.shape[0], self.spikes.shape[0], iter))
         self.realcorrs = np.corrcoef(self.spikes)
-        #self.which_side_is_cell()
-       # print("real_corrs_shape" + str(self.realcorrs.shape))
-        #print(self.cell_distances.shape)
 
         for i in range(iter):
             print(i)
@@ -128,35 +125,25 @@ def get_corrs(main_folder):
 
 def apply_correlations(main_folder, folder="WT_GR_3_dpf",deconvolution_method = "AR1", iter = 120, remove_intro = True, start_from = 0):
         f = folder
-        if deconvolution_method == "AR1":
-            data_sets = [os.path.basename(x) for x in glob.glob(main_folder + f + "/*_oasis_c*")]
-            suffix_len = 12
-
-        if deconvolution_method == "BCL":
-            data_sets = [os.path.basename(x) for x in glob.glob(main_folder + f + "/*_spikes*")]
-            print(data_sets)
-
-            suffix_len = 22 -1
-
+        data_sets = list_data_sets_in_folder(main_folder =main_folder, condition_folder=f)
         print(len(data_sets))
         data_sets = data_sets [start_from:len(data_sets)]
         for i, d in enumerate(data_sets):
 
-            print("processing ...." + d[:-suffix_len])
+            print("processing ...." + d)
             print(d)
-            corrs = correlations(folder=main_folder + f, data_set_name= d [:-suffix_len], deconvolution_method = deconvolution_method, iter=iter, remove_intro=remove_intro, midline_no=i)
+            corrs = correlations(folder=main_folder + f, data_set_name= d, deconvolution_method = deconvolution_method, iter=iter, remove_intro=remove_intro, midline_no=i)
             print("save_real_corrs")
-            np.savetxt(fname=main_folder + folder + "/correlations/" + d[:-suffix_len] + deconvolution_method + "_cal_real_correlations_removed_intro-" + str(remove_intro) + ".dat", X=corrs.calcorrs)
-            np.savetxt(fname=main_folder + folder + "/correlations/" + d[:-suffix_len] + deconvolution_method + "_spikes_real_correlations_removed_intro-" + str(remove_intro) + ".dat", X=corrs.realcorrs)
+            np.savetxt(fname=main_folder + folder + "/correlations/" + d + deconvolution_method + "_cal_real_correlations_removed_intro-" + str(remove_intro) + ".dat", X=corrs.calcorrs)
+            np.savetxt(fname=main_folder + folder + "/correlations/" + d + deconvolution_method + "_spikes_real_correlations_removed_intro-" + str(remove_intro) + ".dat", X=corrs.realcorrs)
 
             print("save_null_corrs")
-            np.savetxt(fname=main_folder + folder + "/correlations/" + d[:-suffix_len] + deconvolution_method + "_spikes_null_correlations_sig_0.99_iter_" + str(iter) + "_removed_intro-" + str(remove_intro) + ".dat", X=corrs.nullcorrs)
+            np.savetxt(fname=main_folder + folder + "/correlations/" + d + deconvolution_method + "_spikes_null_correlations_sig_0.99_iter_" + str(iter) + "_removed_intro-" + str(remove_intro) + ".dat", X=corrs.nullcorrs)
 
             print("save_distances")
-            np.savetxt(fname=main_folder + folder + "/correlations/" + d[:-suffix_len] + deconvolution_method + "_cell_distances" + "_removed_intro-" + str(remove_intro) + ".dat", X=corrs.cell_distances)
+            np.savetxt(fname=main_folder + folder + "/correlations/" + d + deconvolution_method + "_cell_distances" + "_removed_intro-" + str(remove_intro) + ".dat", X=corrs.cell_distances)
 
-
-            np.savetxt(fname=main_folder + folder + "/correlations/" + d[:-suffix_len] + deconvolution_method + "_cell_side" + "_removed_intro-" + str(remove_intro) + ".dat", X=corrs.side.astype(np.int))
+            np.savetxt(fname=main_folder + folder + "/correlations/" + d + deconvolution_method + "_cell_side" + "_removed_intro-" + str(remove_intro) + ".dat", X=corrs.side.astype(np.int))
             del corrs
 
 

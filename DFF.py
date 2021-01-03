@@ -109,9 +109,9 @@ def get_smooth_DFF(main_folder):
             print("processing ...." + d)
             traces(folder=main_folder + f + "/", data_set_name=d)
 
-def apply_oasis(main_folder, folder = "7_dpf/", result ="/media/thomas_sainsbury/Samsung_T5/SeG/results/Baysian_network_inference/R_scirpts_for_assembly_paper/OASIS_output/WT_NR_7_dpf/"):
+def apply_oasis(main_folder, folder = "7_dpf/", result ="/media/thomas_sainsbury/Samsung_T5/SeG/results/Baysian_network_inference/R_scirpts_for_assembly_paper/OASIS_output/WT_NR_7_dpf/", start_from =0 ):
     f = folder
-    data_sets = [os.path.basename(x) for x in glob.glob(main_folder + f + "/*traces*")]
+    data_sets = [os.path.basename(x) for x in glob.glob(main_folder + f + "/*traces*")][start_from:]
     for d in data_sets:
             print("processing .... " + d [:-21])
             t = traces(folder=main_folder + f + "/", data_set_name=d)
