@@ -46,7 +46,7 @@ class correlations:
     def circular_permutation(self):
         shuff = self.spikes
         for i in range(shuff.shape[0]):
-            rand = np.random.uniform(low=0, high=self.spikes.shape[0], size=1)
+            rand = np.random.uniform(low=0, high=self.spikes.shape[1], size=1)
             shuff[i, :] = np.roll(shuff[i, :], int(rand))
         return (shuff)
 
@@ -104,6 +104,8 @@ class correlations:
             print(i)
             print(b)
             self.quants [:,:,i] = np.quantile(self.nullcorrs [:,:,0:b], axis = 2, q = .95)
+
+
 
 
 

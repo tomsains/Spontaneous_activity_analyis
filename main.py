@@ -5,6 +5,7 @@ from DFF import *
 from correlations import *
 from SNP import *
 from synchronous_frames_and_cell_numbers import *
+from Plot_snp import *
 from Utility_functions import load_data_by_deconvolution_method
 import glob
 import os
@@ -22,11 +23,12 @@ if __name__ == '__main__':
     main_folder = "/media/thomas_sainsbury/spont/SeG/results/Baysian_network_inference/R_scirpts_for_assembly_paper/BCL_output/"
     decon = False
     AR1_corrs = False
-    BCL_corrs = True
+    BCL_corrs = False
     remove_beg = False
     SNPs = True
-    sync_frames = True
+    sync_frames = False
     test_subampled_corrs = False
+    plot_SNPs_sync = False
 
 
     if decon == True:
@@ -76,7 +78,7 @@ if __name__ == '__main__':
 
 
     if SNPs == True:
-        '''
+
         combine_SNPs(main_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/BCL_output/",
                      results_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/BCL_results/SNP/",
                      remove_intro = True, deconvolution_method = "BCL")
@@ -87,9 +89,12 @@ if __name__ == '__main__':
         combine_SNPs(main_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/OASIS_output/",
                      results_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/OASIS_results/SNP/",
                      remove_intro=True, deconvolution_method="AR1")
+
+        
         combine_SNPs(main_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/OASIS_output/",
                      results_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/OASIS_results/SNP/",
                      remove_intro=False, deconvolution_method="AR1")
+        
 
         combine_SNPs(main_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/OASIS_output/",
                      results_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/OASIS_results/SNP/",
@@ -97,7 +102,7 @@ if __name__ == '__main__':
         combine_SNPs(main_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/OASIS_output/",
                      results_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/OASIS_results/SNP/",
                      remove_intro=False, deconvolution_method="estimated")
-
+        '''
 
 
     if sync_frames == True:
@@ -120,17 +125,30 @@ if __name__ == '__main__':
             deconvolution_method="AR1",
             remove_intro=True)
         '''
+        
         apply_sync_frames(
-            main_folder="/media/thomas_sainsbury/Samsung_T5/Spontaneous_activity_experiments/OASIS_output/",
-            results_folder="/media/thomas_sainsbury/Samsung_T5/Spontaneous_activity_experiments/OASIS_results/sync_frames_cell_num/",
+            main_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/OASIS_output/",
+            results_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/OASIS_results/sync_frames_cell_num/",
             deconvolution_method="estimated",
             remove_intro=False)
         apply_sync_frames(
-            main_folder="/media/thomas_sainsbury/Samsung_T5/Spontaneous_activity_experiments/OASIS_output/",
-            results_folder="/media/thomas_sainsbury/Samsung_T5/Spontaneous_activity_experiments/OASIS_results/sync_frames_cell_num/",
+            main_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/OASIS_output/",
+            results_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/OASIS_results/sync_frames_cell_num/",
             deconvolution_method="estimated",
             remove_intro=True)
 
+    if plot_SNPs_sync == True:
+        data_frames_for_plots(SNP_folder = "/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/BCL_results/SNP/",
+                              sync_frame_folder = "/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/BCL_results/sync_frames_cell_num/",
+                              deconvolution_method = "BCL")
+
+        data_frames_for_plots(SNP_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/OASIS_results/SNP/",
+                              sync_frame_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/OASIS_results/sync_frames_cell_num/",
+                              deconvolution_method="AR1")
+
+        data_frames_for_plots(SNP_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/OASIS_results/SNP/",
+                              sync_frame_folder="/media/thomas_sainsbury/spont/Spontaneous_activity_experiments/OASIS_results/sync_frames_cell_num/",
+                              deconvolution_method="estimated")
 
 
     if test_subampled_corrs == True:

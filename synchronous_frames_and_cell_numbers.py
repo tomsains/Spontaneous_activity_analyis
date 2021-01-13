@@ -6,6 +6,7 @@ import glob
 from Utility_functions import load_data_by_deconvolution_method, list_data_sets_in_folder
 
 
+
 class sync_frames_cell_num:
     def __init__(self, main_folder, folder, data_set_name,  deconvolution_method, remove_intro, index):
         path = main_folder + folder
@@ -74,12 +75,12 @@ def apply_sync_frames(main_folder, results_folder, deconvolution_method, remove_
                                 deconvolution_method=deconvolution_method, remove_intro=remove_intro, index=j)
 
             all_fish [j] = sf_object.df
+            #print(all_fish [j])
         all_conditions [i] = pd.concat(all_fish)
     combined_df = pd.concat(all_conditions, ignore_index=True)
     print(combined_df)
 
     combined_df.to_pickle(results_folder + "sync_frame_and_active_cells_" + deconvolution_method + "_remove_intro-"+ str(remove_intro) + ".pkl")
-
 
 
 

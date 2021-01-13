@@ -17,7 +17,7 @@ def load_data_by_deconvolution_method(full_folder_path, data_set_name, method):
     elif method == "estimated":
         spikes = np.loadtxt(full_folder_path + data_set_name + "_oasis_s.txt")
         calcium = np.loadtxt(full_folder_path + data_set_name + "_oasis_s.txt")
-        spikes = (spikes > 0.1) * 1
+        spikes = (spikes > 0.2) * 1
 
     return(spikes, calcium)
 
